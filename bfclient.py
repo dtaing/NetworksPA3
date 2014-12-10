@@ -3,6 +3,10 @@ __author__ = 'Danny Taing'
 import socket
 import sys
 import datetime
+import select
+import json
+
+BUFFER = 2048
 
 class Node:
     def __init__(self, ip, port, cost, link):
@@ -51,9 +55,29 @@ def setup_server(host, port):
     print "listening on {0}:{1}\n".format(host, port)
     return sock
 
-def broadcast_costs():
-    """ send estimated path costs to each neighbor """
+def estimate_costs():
+    """ Use Bellman-Ford Algorithm to recalculate distance costs """
 
+def broadcast_costs():
+    """ Send estimated path costs to each neighbor """
+
+def handle(input):
+    if input == "SHOWRT":
+        showrt()
+
+    if "LINKDOWN" in input:
+        x = 5
+
+    if "LINKUP" in input:
+        x = 5
+
+    if "CLOSE" in input:
+        x = 5
+    else:
+        pass
+
+def showrt():
+    myDV.printDVList()
 
 if __name__ == "__main__":
     local_ip = socket.gethostbyname(socket.gethostname())
@@ -79,6 +103,24 @@ if __name__ == "__main__":
 
     # Begin accepting ROUTE UPDATES from neighbors
     sock = setup_server(local_ip, int(local_port))
+
+    # Wait for updates from neighbors and user input
+    inputs = [sock, sys.stdin]
+    while 1:
+        readable, writable, exceptional = select.select(inputs, [], [])
+        for s in readable:
+            if s == sys.stdin:
+                # User input
+                user_input = sys.stdin.readline()
+                user_input = user_input.split()
+                command = user_input[0]
+                if command == "SHOWRT":
+                    myDV.printDVList()
+                #handle(user_input)
+            else:
+                # Update from neighbor
+                data, sender = s.recvfrom(BUFFER)
+                loaded = json.loads(data)
 
 
 
